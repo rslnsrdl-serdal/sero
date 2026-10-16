@@ -81,17 +81,17 @@ if(!m||typeof m!=="object")return;
 if(m.t==="join"){
 if(pid)return;
 const id=String(m.id||"").slice(0,48);let name=String(m.name||"").trim().slice(0,18).replace(/[<>]/g,"");
-if(!id||!name){conn.send({t:"deny",message:"Takma ad gerekli."});conn.close();return}
-if(S.players.size>=30&&!S.players.has(id)){conn.send({t:"deny",message:"Oda dolu (30 oyuncu)."});conn.close();return}
+if(!id||!name){conn.send({t:"deny",message:"Takma ad gerekli."});setTimeout(()=>conn.close(),200);return}
+if(S.players.size>=30&&!S.players.has(id)){conn.send({t:"deny",message:"Oda dolu (30 oyuncu)."});setTimeout(()=>conn.close(),200);return}
 let existing=S.players.get(id);if(existing){try{existing.conn?.close()}catch(_){}}else{let base=name,i=2;while([...S.players.values()].some(p=>p.name.toLocaleLowerCase("tr")===name.toLocaleLowerCase("tr")))name=(base.slice(0,14)+" "+i++).slice(0,18);existing={id,name,score:0,correct:0,answered:-1,connected:false}}
 pid=id;Object.assign(existing,{conn,connected:true});S.players.set(id,existing);
 conn.send({t:"welcome",id,name:existing.name,pin:S.pin,phase:S.phase,score:existing.score,questions:S.questions.length});
 if(S.phase==="question"&&S.current)conn.send(questionPacket());
-else if(S.phase==="reveal")conn.send(revealPacket());
+else if(S.phase==="reveal"){conn.send(questionPacket());conn.send(revealPacket())}
 else if(S.phase==="finish")conn.send({t:"finish",board:roster()});
 broadcast({t:"roster",players:roster()});updateLobby();updateHostProgress();return}
 if(m.t==="answer"&&pid&&S.phase==="question"){let p=S.players.get(pid);if(!p||!p.connected||p.answered===S.index)return;
-let opt=Number(m.option);if(!Number.isInteger(opt)||opt<0||opt>3)return;
+let opt=Number(m.option);if(Number(m.q)!==S.index||!Number.isInteger(opt)||opt<0||opt>3)return;
 if(Date.now()>S.deadline+300)return;
 p.answered=S.index;S.answers++;let elapsed=Math.max(0,S.duration*1000-(S.deadline-Date.now()));let ok=opt===S.current.correct;
 let pts=ok?Math.round(500+500*Math.max(0,1-elapsed/(S.duration*1000))):0;p.score+=pts;if(ok)p.correct++;
@@ -130,7 +130,7 @@ let p;try{p=new Peer({debug:0})}catch(err){peerFail(err);return}S.peer=p;
 p.on("open",()=>{if(S.peer!==p)return;let conn=p.connect("geoquest6-"+pin,{reliable:true,serialization:"json"});S.conn=conn;conn.on("open",()=>{conn.send({t:"join",id:S.playerId,name:S.playerName})});conn.on("data",guestMessage);conn.on("error",err=>{if(S.role==="guest")peerFail(err)});conn.on("close",()=>{if(S.role==="guest"&&S.phase!=="home")peerFail(Error("Sunucu ile bağlantı kapandı. Sunucu oyunu sonlandırmış olabilir."))})});
 p.on("error",err=>{if(S.peer===p)peerFail(err)})}
 function guestMessage(m){if(!m||typeof m!=="object")return;
-if(m.t==="deny"){try{S.conn?.close()}catch(_){}joinScreen(m.message||"Katılım reddedildi.");return}
+if(m.t==="deny"){const reason=m.message||"Katılım reddedildi.";joinScreen(reason);try{S.conn?.close()}catch(_){}try{S.peer?.destroy()}catch(_){}S.conn=null;S.peer=null;return}
 if(m.t==="welcome"){S.me={id:m.id,name:m.name,score:m.score};S.phase=m.phase==="finish"?"finish":"waiting";guestWaiting();return}
 if(m.t==="roster"){if(S.phase==="waiting"&&$("playercount"))$("playercount").textContent=(m.players||[]).filter(p=>p.connected).length+" oyuncu katıldı";return}
 if(m.t==="lobby"){S.phase="waiting";guestWaiting();return}
