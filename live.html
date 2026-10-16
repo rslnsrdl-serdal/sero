@@ -127,8 +127,8 @@ if(name.length<2){S.pin=pin;joinScreen("En az iki karakterli bir takma ad yaz.")
 S.pin=pin;S.playerName=name;S.role="guest";S.phase="connecting";S.playerId=(()=>{try{return sessionStorage.getItem("geoquest-id")||(()=>{let id="p"+rand(1e9)+"-"+rand(1e9);sessionStorage.setItem("geoquest-id",id);return id})()}catch(_){return "p"+rand(1e9)+"-"+rand(1e9)}})();
 spin("Oyun odasına bağlanılıyor…");
 let p;try{p=new Peer({debug:0})}catch(err){peerFail(err);return}S.peer=p;
-p.on("open",()=>{if(S.peer!==p)return;let conn=p.connect("geoquest6-"+pin,{reliable:true,serialization:"json"});S.conn=conn;conn.on("open",()=>{conn.send({t:"join",id:S.playerId,name:S.playerName})});conn.on("data",guestMessage);conn.on("error",err=>{if(S.role==="guest")peerFail(err)});conn.on("close",()=>{if(S.role==="guest"&&S.phase!=="home")peerFail(Error("Sunucu ile bağlantı kapandı. Sunucu oyunu sonlandırmış olabilir."))})});
-p.on("error",err=>{if(S.peer===p)peerFail(err)})}
+p.on("open",()=>{if(S.peer!==p)return;let conn=p.connect("geoquest6-"+pin,{reliable:true,serialization:"json"});S.conn=conn;conn.on("open",()=>{conn.send({t:"join",id:S.playerId,name:S.playerName})});conn.on("data",guestMessage);conn.on("error",err=>{if(S.role==="guest")peerFail(err)});conn.on("close",()=>{if(S.role==="guest"&&!["home","join"].includes(S.phase))peerFail(Error("Sunucu ile bağlantı kapandı. Sunucu oyunu sonlandırmış olabilir."))})});
+p.on("error",err=>{if(S.peer===p)peerFail(err)});setTimeout(()=>{if(S.peer===p&&S.phase==="connecting")peerFail(Error("Bağlantı zaman aşımına uğradı. PIN’i kontrol et veya yeniden dene."))},15000)}
 function guestMessage(m){if(!m||typeof m!=="object")return;
 if(m.t==="deny"){const reason=m.message||"Katılım reddedildi.";joinScreen(reason);try{S.conn?.close()}catch(_){}try{S.peer?.destroy()}catch(_){}S.conn=null;S.peer=null;return}
 if(m.t==="welcome"){S.me={id:m.id,name:m.name,score:m.score};S.phase=m.phase==="finish"?"finish":"waiting";guestWaiting();return}
