@@ -44,5 +44,32 @@ Yalnızca statik HTML/CSS/JavaScript kullanır; build komutu veya API anahtarı 
 - Dış kütüphane veya sunucu kurulumu yok
 - Açık kaynak kaynaklarına bağlantılar kodun ve uygulamanın altındadır
 
+
+## 🎉 GeoQuest Live: PIN ile çok oyunculu yarışma
+
+**[Canlı yarışmaya gir](https://rslnsrdl-serdal.github.io/sero/live.html)** (GitHub Pages etkinleştirildikten sonra)
+
+1. Bilgisayar, tablet veya bir telefondan `live.html` sayfasını açıp **Yarışma oluştur** seç.
+2. Soru türü (karışık, bayrak, başkent, siluet, diller, kıta, para birimi veya yönetici), kıta, soru sayısı (10/15/20/30) ve süre (10/20/30 saniye) belirle.
+3. 6 haneli oyun PIN'ini veya katılım bağlantısını oyuncularla paylaş.
+4. Oyuncular kendi telefonlarından **PIN ile katıl** seçip takma ad girer.
+5. Oyuncular geldiğinde **Yarışmayı başlat**. Sorular aynı anda açılır, herkes cihazından işaretler.
+6. Süre dolduğunda veya herkes cevapladığında doğru cevap ve canlı sıralama gösterilir. Sunucu sonraki soruyu açar.
+7. Finalde podyum ve puan tablosu gösterilir; aynı odada yeniden başlatılabilir.
+
+### Teknik ve güvenilirlik
+
+- **PeerJS 1.5.5 + WebRTC** ile sunucu tarayıcısı ve oyuncu cihazları arasında doğrudan veri bağlantısı kurulur; bu ilk sürümde ayrı bir backend, hesap veya API anahtarı gerektirmez.
+- Oyun PIN'i bağlantı kimliğine dönüştürülür; [PeerJS Cloud](https://peerjs.com/server/cloud) (üçüncü taraf ücretsiz sinyal sunucusu) kullanılır. Sunucunun tüm oyun boyunca açık ve internete bağlı kalması gerekir.
+- **Üretim ölçeğinde garantili servis değildir.** Genel ağlar, kurumsal güvenlik duvarları, NAT, mobil tarayıcılar veya ücretsiz sinyal servisinin kesintileri bağlantıyı engelleyebilir. Geliştirme/test sürümü; özellikle küçük gruplar için uygun (öneri: 2–15 kişi; yazılımdaki üst sınır: 30).
+- PIN yalnızca kolay katılım içindir, güçlü erişim kontrolü değildir. PIN'i bilen başka biri odaya girmeyi deneyebilir. Hassas bilgiler veya gerçek kimlik bilgileri kullanmayın; yalnızca takma ad girin.
+- Puanlar sunucu cihazında hesaplanır; yarışma geçmişi sunucuda kalıcı olarak depolanmaz.
+- Yönetici veri kaynağı tüm dünyayı kapsamaz ve siyasi görevler değişebilir. Bu bölümü resmî kaynaklarla yeniden teyit edin.
+
+### Dosyalar
+
+- `index.html`: Kişisel coğrafya oyunu + GeoQuest Live bağlantısı
+- `live.html`: PIN ile çok oyunculu canlı yarışma (ayrı ekran)
+
 ## 💡 Geliştirme fikirleri
 Haritada şehir seçme, zaman sınırı olmayan öğrenme modu, Türkçe–Almanca–İngilizce arayüz, iki kişilik yarışma, offline destek ve günlük görevler.
